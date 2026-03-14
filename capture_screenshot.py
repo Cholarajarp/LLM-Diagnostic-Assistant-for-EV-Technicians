@@ -30,15 +30,16 @@ async def main():
 
         # 3. Enter Query and get response
         print("Entering complex query in Dark Mode...")
-        # Streamlit inputs can sometimes be tricky to find immediately
-        await page.wait_for_selector('input[type="text"]')
-        await page.fill('input[type="text"]', "How to check Inverter resistance for Nissan?")
+        # Streamlit chat_input uses a textarea for multiline capability
+        await page.wait_for_selector('textarea[aria-label="Ask about EV errors (e.g., \'BMS_a066\' or \'How to check Inverter resistance?\')"]')
+        await page.fill('textarea[aria-label="Ask about EV errors (e.g., \'BMS_a066\' or \'How to check Inverter resistance?\')"]', "How to check Inverter resistance for Nissan?")
 
-        # Click the "Get Diagnosis" button
-        await page.click('button:has-text("Get Diagnosis")')
+        # Press Enter to send the chat message
+        await page.press('textarea[aria-label="Ask about EV errors (e.g., \'BMS_a066\' or \'How to check Inverter resistance?\')"]', "Enter")
 
         print("Waiting for LLM response...")
-        await page.wait_for_selector('h3:has-text("Diagnostic Response:")', timeout=180000)
+        # Wait for the "Sources Cited:" markdown to appear in the assistant's response bubble
+        await page.wait_for_selector('text=Sources Cited:', timeout=180000)
         await page.wait_for_timeout(4000) # Allow response and source expanders to render fully
 
         print("Taking Response screenshot...")

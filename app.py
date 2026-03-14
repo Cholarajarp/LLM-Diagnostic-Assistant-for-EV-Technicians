@@ -141,34 +141,49 @@ else:
     """
     st.markdown(light_css, unsafe_allow_html=True)
 
-# Main Content Area
-col1, col2 = st.columns([1, 8])
-with col1:
-    st.title("⚡")
-with col2:
-    st.title("EV Technician Diagnostic Assistant")
+# Main Content Area Header
+st.markdown("<h1 style='text-align: center; margin-bottom: 20px;'>⚡ EV Diagnostic Assistant</h1>", unsafe_allow_html=True)
 
-st.markdown("---")
-st.markdown("### Ask questions about EV error codes, diagnostic procedures, or repair steps.")
+# Initialize Chat History
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "assistant", "content": "Hello Technician. What EV error code, symptom, or diagnostic procedure do you need help with today?"}
+    ]
 
+# Display Chat History
+for message in st.session_state.messages:
+    avatar = "🛠️" if message["role"] == "user" else "⚡"
+    with st.chat_message(message["role"], avatar=avatar):
+        st.markdown(message["content"])
+
+# Load Pipeline
 qa_chain = load_rag_pipeline()
 
-query = st.text_input("Enter your diagnostic query (e.g., 'How to check Inverter resistance?' or 'BMS_a066'):", key="query_input")
+# React to User Input
+if prompt := st.chat_input("Ask about EV errors (e.g., 'BMS_a066' or 'How to check Inverter resistance?')"):
+    # Display user message in chat message container
+    st.chat_message("user", avatar="🛠️").markdown(prompt)
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
-if st.button("Get Diagnosis"):
-    if query:
+    # Display assistant response in chat message container
+    with st.chat_message("assistant", avatar="⚡"):
         with st.spinner("Searching deep repair manuals..."):
-            result = qa_chain.invoke({"query": query})
+            result = qa_chain.invoke({"query": prompt})
+            response_text = result["result"]
 
-            st.subheader("Diagnostic Response:")
-            st.info(result["result"])
+            # Format the output with citations
+            st.markdown(response_text)
 
-            st.subheader("Sources Cited:")
-            for doc in result["source_documents"]:
-                source = doc.metadata.get("source", "Unknown")
-                page = doc.metadata.get("page", "Unknown")
-                st.markdown(f"- **File:** `{source}` | **Page:** `{page}`")
-                with st.expander(f"View Context Snippet from Page {page}"):
-                    st.write(doc.page_content)
-    else:
-        st.warning("Please enter a query.")
+            if result.get("source_documents"):
+                st.markdown("---")
+                st.markdown("**Sources Cited:**")
+                for doc in result["source_documents"]:
+                    source = doc.metadata.get("source", "Unknown")
+                    page = doc.metadata.get("page", "Unknown")
+                    st.caption(f"File: `{source}` | Page: `{page}`")
+                    with st.expander(f"View Context from {source}"):
+                        st.markdown(f"*{doc.page_content}*")
+
+            # Add assistant response to chat history
+            st.session_state.messages.append({"role": "assistant", "content": response_text})
