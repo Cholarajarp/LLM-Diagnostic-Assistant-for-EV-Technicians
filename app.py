@@ -2,7 +2,7 @@ import streamlit as st
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
 from langchain_community.vectorstores import Chroma
 from langchain_core.prompts import PromptTemplate
-from langchain_classic.chains import RetrievalQA
+from langchain.chains import RetrievalQA
 from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 
 CHROMA_DIR = "chroma_db"
