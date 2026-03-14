@@ -1,25 +1,46 @@
 # ⚡ LLM Diagnostic Assistant for EV Technicians
 
-This project implements a Retrieval-Augmented Generation (RAG) pipeline to embed EV repair manuals, allowing EV technicians to ask an AI diagnostic questions and receive exact, cited repair procedures.
+This project implements a Retrieval-Augmented Generation (RAG) pipeline to embed deeply detailed EV repair manuals. It allows EV technicians to ask an AI diagnostic questions and receive exact, cited repair procedures along with source context.
 
-![EV Diagnostic Assistant](screenshot.png)
+## UI Previews
+
+### Light Mode (Default)
+![Light Mode](screenshot_light.png)
+
+### Dark Mode (Toggled via Sidebar)
+![Dark Mode](screenshot_dark.png)
+
+### RAG Response & Citation
+![Diagnostic Response](screenshot_response.png)
 
 ## Overview
 
-Modern Electric Vehicles have complex high-voltage systems and diagnostic procedures. This application acts as an intelligent assistant tailored for EV repair shops. Instead of manually searching through thousands of pages of PDF manuals, technicians can simply query error codes or symptoms. The local LLM will retrieve the most relevant sections of the manuals and generate an actionable, cited response, minimizing diagnostic time.
+Modern Electric Vehicles have complex high-voltage systems. This application acts as an intelligent assistant tailored for EV repair shops. Instead of manually searching through thousands of pages of PDF manuals, technicians can simply query error codes or symptoms (e.g., `BMS_a066` or `Inverter resistance check`). The local LLM retrieves the most relevant sections of the manuals and generates an actionable, cited response.
 
 ### Features
-* **PDF Document Ingestion Pipeline:** Uses Langchain to parse, split, and ingest mock EV technical repair manuals (e.g., Tesla High Voltage Battery issues, Nissan Leaf Inverter Replacement).
+* **Deep PDF Document Generation & Ingestion:** The `generate_manuals.py` script builds comprehensive, multi-page PDF guides containing complex troubleshooting trees for platforms like Tesla and Nissan. These are ingested using Langchain.
 * **Local Vector Store:** Embeddings are generated locally using HuggingFace (`all-MiniLM-L6-v2`) and stored in ChromaDB.
-* **Retrieval-Augmented Generation (RAG):** Uses a local LLM via HuggingFace (GPT-2 based locally for testing purposes) to formulate answers strictly from the context retrieved.
-* **Cited Sources:** Always cites the exact PDF file and page number so the technician can verify the repair steps.
-* **Streamlit UI:** A clean, responsive web interface built with Streamlit.
+* **Retrieval-Augmented Generation (RAG):** Uses a local LLM via HuggingFace to formulate answers strictly from the context retrieved.
+* **Cited Sources:** Always cites the exact PDF file and page number so the technician can verify the repair steps. Expander widgets allow the technician to read the raw source text.
+* **Enhanced Streamlit UI:** A responsive web interface built with Streamlit, featuring a side panel with architecture details and a CSS-injected Dark/Light mode toggle.
 * **Fully Tested:** Includes `pytest` tests to verify document loading and retrieval logic.
 
+## RAG Architecture
+
+```mermaid
+graph TD
+    A[EV PDF Manuals] -->|PyPDFDirectoryLoader| B(Langchain Text Splitter)
+    B -->|HuggingFace Embeddings| C[(ChromaDB Vector Store)]
+    D[Technician Query] --> E(Retriever)
+    C -->|Top-K Similarity| E
+    E -->|Context + Query| F[Local LLM - GPT-2/T5]
+    F -->|Generated Response + Citations| G[Streamlit UI]
+```
+
 ## Project Structure
-* `generate_manuals.py` - Generates mock PDF manuals mimicking real EV documentation.
+* `generate_manuals.py` - Generates highly detailed mock PDF manuals mimicking real EV documentation (multi-page).
 * `ingest.py` - Loads PDFs, splits text, creates embeddings, and saves to the Chroma vector database.
-* `app.py` - Streamlit application that handles the user interface and houses the Langchain RAG RetrievalQA chain.
+* `app.py` - Streamlit application handling the UI, Dark/Light modes, and the Langchain RAG chain.
 * `test_app.py` - Pytest unit tests for ingestion and retrieval components.
 * `data/` - Directory containing the generated PDF manuals.
 * `chroma_db/` - Local directory where the embedded vectors are persisted.
@@ -33,8 +54,8 @@ Modern Electric Vehicles have complex high-voltage systems and diagnostic proced
    pip install -r requirements.txt
    ```
 
-2. **Generate Mock EV Manuals:**
-   This script will populate the `data/` directory with PDF files simulating EV technical manuals.
+2. **Generate Deep EV Manuals:**
+   This script will populate the `data/` directory with multi-page PDF files simulating comprehensive EV technical manuals.
    ```bash
    python generate_manuals.py
    ```
@@ -52,7 +73,8 @@ Start the interactive Streamlit application:
 streamlit run app.py
 ```
 * Navigate to `http://localhost:8501`.
-* Enter a query into the text input, for example: `"How to fix High Voltage Battery Error?"` or `"Nissan Leaf Inverter Failure"`.
+* Use the sidebar to toggle between Light Mode and Dark Mode.
+* Enter a query into the text input, for example: `"How to check Inverter resistance for Nissan?"`.
 * The AI will retrieve the relevant manual context, generate diagnostic steps, and cite the specific manual and page number!
 
 ## Testing
