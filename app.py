@@ -58,50 +58,63 @@ def load_rag_pipeline():
 
 st.set_page_config(page_title="EV Diagnostic Assistant", page_icon="⚡", layout="wide")
 
-# Sidebar setup for Architecture and Dark/Light Mode
+# Inject Global CSS to Hide Streamlit Elements (Deploy, Menu, Footer) and Modernize UI
+hide_streamlit_style = """
+<style>
+#MainMenu {visibility: hidden;}
+header {visibility: hidden;}
+footer {visibility: hidden;}
+.stDeployButton {display:none;}
+/* Modernize general look */
+.stTextInput > label {font-weight: bold;}
+div.stButton > button:first-child {
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-weight: bold;
+}
+</style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# Sidebar setup for Theme
 with st.sidebar:
     st.image("https://upload.wikimedia.org/wikipedia/commons/4/41/Electric_Car_Icon.png", width=80)
-    st.title("Settings & Info")
+    st.title("Settings")
 
+    st.markdown("---")
     st.subheader("UI Theme")
     theme_mode = st.radio("Choose Mode:", ["Light Mode", "Dark Mode"])
 
-    st.subheader("RAG Architecture")
-    st.markdown("""
-    **Pipeline Flow:**
-    1. **PDFs** (EV Manuals)
-    2. **Langchain** (PyPDFLoader & TextSplitter)
-    3. **HuggingFace** (`all-MiniLM-L6-v2`)
-    4. **ChromaDB** (Local Vector Store)
-    5. **Retriever** (Top-K Similarity Search)
-    6. **LLM** (`GPT-2` text-generation)
-    7. **Streamlit UI** (Response & Citations)
-    """)
-
-# Inject Custom CSS based on Theme
+# Inject Custom CSS based on Theme selection
 if theme_mode == "Dark Mode":
     dark_css = """
     <style>
     .stApp {
-        background-color: #1E1E1E;
+        background-color: #121212;
         color: #E0E0E0;
     }
     .stSidebar {
-        background-color: #2D2D2D;
+        background-color: #1E1E1E;
     }
     h1, h2, h3, h4, h5, h6, p, div {
         color: #E0E0E0 !important;
     }
     .stTextInput > div > div > input {
-        background-color: #333333;
+        background-color: #2D2D2D;
         color: white;
+        border: 1px solid #4CAF50;
     }
-    div[data-baseweb="button"] > button {
+    div.stButton > button:first-child {
         background-color: #4CAF50;
         color: white;
+        border: none;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #45a049;
     }
     .stAlert {
-        background-color: #333333;
+        background-color: #2D2D2D;
+        border-left-color: #4CAF50;
     }
     </style>
     """
@@ -110,12 +123,19 @@ else:
     light_css = """
     <style>
     .stApp {
-        background-color: #F8F9FA;
+        background-color: #F4F7F6;
         color: #1E1E1E;
     }
-    div[data-baseweb="button"] > button {
+    .stTextInput > div > div > input {
+        border: 1px solid #007BFF;
+    }
+    div.stButton > button:first-child {
         background-color: #007BFF;
         color: white;
+        border: none;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #0056b3;
     }
     </style>
     """
