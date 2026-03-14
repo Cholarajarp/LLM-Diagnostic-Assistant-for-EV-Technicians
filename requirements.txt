@@ -1,0 +1,12 @@
+streamlit
+chromadb
+sentence-transformers
+transformers
+torch
+langchain
+langchain-community
+langchain-huggingface
+pypdf
+pytest
+playwright
+reportlab
