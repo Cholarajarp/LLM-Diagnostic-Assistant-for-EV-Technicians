@@ -7,12 +7,14 @@ async def main():
         page = await browser.new_page(viewport={"width": 1280, "height": 800})
 
         print("Navigating to Streamlit app...")
-        await page.goto("http://localhost:8501", timeout=60000)
+        await page.goto("http://localhost:8502", timeout=60000)
 
         # Wait for Streamlit to load completely
         print("Waiting for app to load...")
         # A more robust selector: wait for the main stApp div
         await page.wait_for_selector('.stApp', state='attached', timeout=60000)
+        # Wait for the chat input to appear
+        await page.wait_for_selector('textarea[aria-label="Ask about EV errors (e.g., \'BMS_a066\' or \'How to check Inverter resistance?\')"]', timeout=60000)
         # Give Streamlit's iframe/react components a moment to finish rendering
         await page.wait_for_timeout(5000)
 
