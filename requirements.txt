@@ -3,8 +3,8 @@ chromadb
 sentence-transformers
 transformers
 torch
-langchain
-langchain-community
+langchain<0.3
+langchain-community<0.3
 langchain-huggingface
 pypdf
 pytest
